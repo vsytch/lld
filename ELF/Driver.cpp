@@ -474,6 +474,9 @@ template <class ELFT> void LinkerDriver::link(opt::InputArgList &Args) {
 
   Config->Rela = ELFT::Is64Bits;
 
+  if (Config->EMachine == EM_AMDGPU)
+    Config->Bsymbolic = true;
+
   // Add entry symbol. Note that AMDGPU binaries have no entry points.
   if (Config->Entry.empty() && !Config->Shared && !Config->Relocatable &&
       Config->EMachine != EM_AMDGPU)

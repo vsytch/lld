@@ -6,22 +6,23 @@ add_lld_library(lldELF
   Driver.cpp
   DriverUtils.cpp
   EhFrame.cpp
-  ELFCreator.cpp
   Error.cpp
+  GdbIndex.cpp
   ICF.cpp
   InputFiles.cpp
   InputSection.cpp
   LTO.cpp
   LinkerScript.cpp
   MarkLive.cpp
+  Memory.cpp
   Mips.cpp
   OutputSections.cpp
   Relocations.cpp
   ScriptParser.cpp
   Strings.cpp
-  SymbolListFile.cpp
   SymbolTable.cpp
   Symbols.cpp
+  SyntheticSections.cpp
   Target.cpp
   Thunks.cpp
   Writer.cpp
@@ -33,6 +34,7 @@ add_lld_library(lldELF
   BitWriter
   Codegen
   Core
+  DebugInfoDWARF
   Demangle
   IPO
   Linker
@@ -49,6 +51,8 @@ add_lld_library(lldELF
   lldConfig
   lldCore
   ${PTHREAD_LIB}
-  )
 
-add_dependencies(lldELF intrinsics_gen ELFOptionsTableGen)
+  DEPENDS
+  ELFOptionsTableGen
+  intrinsics_gen
+  )

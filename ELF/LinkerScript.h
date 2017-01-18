@@ -66,6 +66,8 @@ void readLinkerScript(MemoryBufferRef MB);
 // Parses a version script.
 void readVersionScript(MemoryBufferRef MB);
 
+void readDynamicList(MemoryBufferRef MB);
+
 // This enum is used to implement linker script SECTIONS command.
 // https://sourceware.org/binutils/docs/ld/SECTIONS.html#SECTIONS
 enum SectionsCommandKind {
@@ -142,7 +144,7 @@ struct SectionPattern {
 
 struct InputSectionDescription : BaseCommand {
   InputSectionDescription(StringRef FilePattern)
-      : BaseCommand(InputSectionKind), FilePat({FilePattern}) {}
+      : BaseCommand(InputSectionKind), FilePat(FilePattern) {}
 
   static bool classof(const BaseCommand *C);
 
@@ -166,12 +168,12 @@ struct AssertCommand : BaseCommand {
 
 // Represents BYTE(), SHORT(), LONG(), or QUAD().
 struct BytesDataCommand : BaseCommand {
-  BytesDataCommand(uint64_t Data, unsigned Size)
-      : BaseCommand(BytesDataKind), Data(Data), Size(Size) {}
+  BytesDataCommand(Expr E, unsigned Size)
+      : BaseCommand(BytesDataKind), Expression(E), Size(Size) {}
 
   static bool classof(const BaseCommand *C);
 
-  uint64_t Data;
+  Expr Expression;
   unsigned Offset;
   unsigned Size;
 };
@@ -231,7 +233,7 @@ public:
   void adjustSectionsBeforeSorting();
   void adjustSectionsAfterSorting();
 
-  std::vector<PhdrEntry<ELFT>> createPhdrs();
+  std::vector<PhdrEntry> createPhdrs();
   bool ignoreInterpSection();
 
   uint32_t getFiller(StringRef Name);
@@ -240,7 +242,7 @@ public:
   bool shouldKeep(InputSectionBase<ELFT> *S);
   void assignOffsets(OutputSectionCommand *Cmd);
   void placeOrphanSections();
-  void assignAddresses(std::vector<PhdrEntry<ELFT>> &Phdrs);
+  void assignAddresses(std::vector<PhdrEntry> &Phdrs);
   bool hasPhdrsCommands();
   uint64_t getHeaderSize() override;
   uint64_t getSymbolValue(StringRef S) override;

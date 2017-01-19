@@ -15,6 +15,7 @@
 #include "Strings.h"
 #include "SyntheticSections.h"
 #include "Target.h"
+#include "Writer.h"
 
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Path.h"
@@ -34,27 +35,27 @@ static typename ELFT::uint getSymVA(const SymbolBody &Body,
 
   switch (Body.kind()) {
   case SymbolBody::DefinedSyntheticKind: {
-    auto &D = cast<DefinedSynthetic<ELFT>>(Body);
+    auto &D = cast<DefinedSynthetic>(Body);
     const OutputSectionBase *Sec = D.Section;
     if (!Sec)
       return D.Value;
-    if (D.Value == DefinedSynthetic<ELFT>::SectionEnd)
+    if (D.Value == uintX_t(-1))
       return Sec->Addr + Sec->Size;
     return Sec->Addr + D.Value;
   }
   case SymbolBody::DefinedRegularKind: {
     auto &D = cast<DefinedRegular<ELFT>>(Body);
-    InputSectionBase<ELFT> *SC = D.Section;
+    InputSectionBase<ELFT> *IS = D.Section;
 
     // According to the ELF spec reference to a local symbol from outside
     // the group are not allowed. Unfortunately .eh_frame breaks that rule
     // and must be treated specially. For now we just replace the symbol with
     // 0.
-    if (SC == &InputSection<ELFT>::Discarded)
+    if (IS == &InputSection<ELFT>::Discarded)
       return 0;
 
     // This is an absolute symbol.
-    if (!SC)
+    if (!IS)
       return D.Value;
 
     uintX_t Offset = D.Value;
@@ -62,7 +63,7 @@ static typename ELFT::uint getSymVA(const SymbolBody &Body,
       Offset += Addend;
       Addend = 0;
     }
-    uintX_t VA = (SC->OutSec ? SC->OutSec->Addr : 0) + SC->getOffset(Offset);
+    uintX_t VA = (IS->OutSec ? IS->OutSec->Addr : 0) + IS->getOffset(Offset);
     if (D.isTls() && !Config->Relocatable) {
       if (!Out<ELFT>::TlsPhdr)
         fatal(toString(D.File) +
@@ -95,8 +96,8 @@ static typename ELFT::uint getSymVA(const SymbolBody &Body,
 SymbolBody::SymbolBody(Kind K, StringRefZ Name, bool IsLocal, uint8_t StOther,
                        uint8_t Type)
     : SymbolKind(K), NeedsCopyOrPltAddr(false), IsLocal(IsLocal),
-      IsInGlobalMipsGot(false), Is32BitMipsGot(false), Type(Type),
-      StOther(StOther), Name(Name) {}
+      IsInGlobalMipsGot(false), Is32BitMipsGot(false), IsInIplt(false),
+      IsInIgot(false), Type(Type), StOther(StOther), Name(Name) {}
 
 // Returns true if a symbol can be replaced at load-time by a symbol
 // with the same name defined in other ELF executable or DSO.
@@ -151,6 +152,8 @@ template <class ELFT> typename ELFT::uint SymbolBody::getGotOffset() const {
 }
 
 template <class ELFT> typename ELFT::uint SymbolBody::getGotPltVA() const {
+  if (this->IsInIgot)
+    return In<ELFT>::IgotPlt->getVA() + getGotPltOffset<ELFT>();
   return In<ELFT>::GotPlt->getVA() + getGotPltOffset<ELFT>();
 }
 
@@ -159,6 +162,8 @@ template <class ELFT> typename ELFT::uint SymbolBody::getGotPltOffset() const {
 }
 
 template <class ELFT> typename ELFT::uint SymbolBody::getPltVA() const {
+  if (this->IsInIplt)
+    return In<ELFT>::Iplt->getVA() + PltIndex * Target->PltEntrySize;
   return In<ELFT>::Plt->getVA() + Target->PltHeaderSize +
          PltIndex * Target->PltEntrySize;
 }
@@ -232,13 +237,6 @@ Undefined::Undefined(StringRefZ Name, bool IsLocal, uint8_t StOther,
     : SymbolBody(SymbolBody::UndefinedKind, Name, IsLocal, StOther, Type) {
   this->File = File;
 }
-
-template <typename ELFT>
-DefinedSynthetic<ELFT>::DefinedSynthetic(StringRef Name, uintX_t Value,
-                                         const OutputSectionBase *Section)
-    : Defined(SymbolBody::DefinedSyntheticKind, Name, /*IsLocal=*/false,
-              STV_HIDDEN, 0 /* Type */),
-      Value(Value), Section(Section) {}
 
 DefinedCommon::DefinedCommon(StringRef Name, uint64_t Size, uint64_t Alignment,
                              uint8_t StOther, uint8_t Type, InputFile *File)
@@ -360,8 +358,3 @@ template class elf::DefinedRegular<ELF32LE>;
 template class elf::DefinedRegular<ELF32BE>;
 template class elf::DefinedRegular<ELF64LE>;
 template class elf::DefinedRegular<ELF64BE>;
-
-template class elf::DefinedSynthetic<ELF32LE>;
-template class elf::DefinedSynthetic<ELF32BE>;
-template class elf::DefinedSynthetic<ELF64LE>;
-template class elf::DefinedSynthetic<ELF64BE>;

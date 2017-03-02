@@ -63,9 +63,8 @@ template <class ELFT> static SymbolBody *addRegular(SymbolAssignment *Cmd) {
       Cmd->Name, /*Type*/ 0, Visibility, /*CanOmitFromDynSym*/ false,
       /*File*/ nullptr);
   Sym->Binding = STB_GLOBAL;
-  replaceBody<DefinedRegular<ELFT>>(Sym, Cmd->Name, /*IsLocal=*/false,
-                                    Visibility, STT_NOTYPE, 0, 0, nullptr,
-                                    nullptr);
+  replaceBody<DefinedRegular>(Sym, Cmd->Name, /*IsLocal=*/false, Visibility,
+                              STT_NOTYPE, 0, 0, nullptr, nullptr);
   return Sym->body();
 }
 
@@ -131,7 +130,7 @@ void LinkerScript<ELFT>::assignSymbol(SymbolAssignment *Cmd, bool InSec) {
     return;
   }
 
-  cast<DefinedRegular<ELFT>>(Cmd->Sym)->Value = Cmd->Expression(Dot);
+  cast<DefinedRegular>(Cmd->Sym)->Value = Cmd->Expression(Dot);
 }
 
 template <class ELFT>
@@ -435,7 +434,8 @@ template <class ELFT> void LinkerScript<ELFT>::output(InputSection *S) {
 }
 
 template <class ELFT> void LinkerScript<ELFT>::flush() {
-  if (!CurOutSec || !AlreadyOutputOS.insert(CurOutSec).second)
+  assert(CurOutSec);
+  if (!AlreadyOutputOS.insert(CurOutSec).second)
     return;
   for (InputSection *I : CurOutSec->Sections)
     output(I);
@@ -447,7 +447,6 @@ template <class ELFT> void LinkerScript<ELFT>::switchTo(OutputSection *Sec) {
   if (AlreadyOutputOS.count(Sec))
     return;
 
-  flush();
   CurOutSec = Sec;
 
   Dot = alignTo(Dot, CurOutSec->Addralign);
@@ -485,23 +484,19 @@ template <class ELFT> void LinkerScript<ELFT>::process(BaseCommand &Base) {
   // calculates and assigns the offsets for each section and also
   // updates the output section size.
   auto &ICmd = cast<InputSectionDescription>(Base);
-  for (InputSectionBase *ID : ICmd.Sections) {
+  for (InputSectionBase *IB : ICmd.Sections) {
     // We tentatively added all synthetic sections at the beginning and removed
     // empty ones afterwards (because there is no way to know whether they were
     // going be empty or not other than actually running linker scripts.)
     // We need to ignore remains of empty sections.
-    if (auto *Sec = dyn_cast<SyntheticSection>(ID))
+    if (auto *Sec = dyn_cast<SyntheticSection>(IB))
       if (Sec->empty())
         continue;
 
-    auto *IB = static_cast<InputSectionBase *>(ID);
     if (!IB->Live)
       continue;
-    switchTo(IB->OutSec);
-    if (auto *I = dyn_cast<InputSection>(IB))
-      output(I);
-    else
-      flush();
+    assert(CurOutSec == IB->OutSec || AlreadyOutputOS.count(IB->OutSec));
+    output(cast<InputSection>(IB));
   }
 }
 
@@ -973,7 +968,7 @@ template <class ELFT> bool LinkerScript<ELFT>::isDefined(StringRef S) {
 
 template <class ELFT> bool LinkerScript<ELFT>::isAbsolute(StringRef S) {
   SymbolBody *Sym = Symtab<ELFT>::X->find(S);
-  auto *DR = dyn_cast_or_null<DefinedRegular<ELFT>>(Sym);
+  auto *DR = dyn_cast_or_null<DefinedRegular>(Sym);
   return DR && !DR->Section;
 }
 

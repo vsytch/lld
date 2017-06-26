@@ -1,8 +1,8 @@
 --- !COFF
-header:
+header:          
   Machine:         IMAGE_FILE_MACHINE_AMD64
   Characteristics: [  ]
-sections:
+sections:        
   - Name:            .drectve
     Characteristics: [ IMAGE_SCN_LNK_INFO, IMAGE_SCN_LNK_REMOVE ]
     Alignment:       1
@@ -10,42 +10,42 @@ sections:
   - Name:            '.debug$S'
     Characteristics: [ IMAGE_SCN_CNT_INITIALIZED_DATA, IMAGE_SCN_MEM_DISCARDABLE, IMAGE_SCN_MEM_READ ]
     Alignment:       1
-    Subsections:
+    Subsections:     
       - !Symbols
-        Records:
+        Records:         
           - Kind:            S_OBJNAME
-            ObjNameSym:
+            ObjNameSym:      
               Signature:       0
-              ObjectName:      'D:\b\ret42-sub.obj'
+              ObjectName:      'C:\src\llvm-project\build\pdb_lines_2.obj'
           - Kind:            S_COMPILE3
-            Compile3Sym:
+            Compile3Sym:     
               Flags:           [ SecurityChecks, HotPatch ]
               Machine:         X64
               FrontendMajor:   19
               FrontendMinor:   0
-              FrontendBuild:   23026
-              FrontendQFE:     0
+              FrontendBuild:   24215
+              FrontendQFE:     1
               BackendMajor:    19
               BackendMinor:    0
-              BackendBuild:    23026
-              BackendQFE:      0
+              BackendBuild:    24215
+              BackendQFE:      1
               Version:         'Microsoft (R) Optimizing Compiler'
       - !Symbols
-        Records:
+        Records:         
           - Kind:            S_GPROC32_ID
-            ProcSym:
+            ProcSym:         
               PtrParent:       0
               PtrEnd:          0
               PtrNext:         0
-              CodeSize:        6
+              CodeSize:        1
               DbgStart:        0
-              DbgEnd:          5
+              DbgEnd:          0
               FunctionType:    4098
               Segment:         0
               Flags:           [  ]
-              DisplayName:     foo
+              DisplayName:     bar
           - Kind:            S_FRAMEPROC
-            FrameProcSym:
+            FrameProcSym:    
               TotalFrameBytes: 0
               PaddingFrameBytes: 0
               OffsetToPadding: 0
@@ -54,119 +54,111 @@ sections:
               SectionIdOfExceptionHandler: 0
               Flags:           [ AsynchronousExceptionHandling, OptimizedForSpeed ]
           - Kind:            S_PROC_ID_END
-            ScopeEndSym:
+            ScopeEndSym:     
       - !Lines
-        CodeSize:        6
+        CodeSize:        1
         Flags:           [  ]
         RelocOffset:     0
         RelocSegment:    0
-        Blocks:
-          - FileName:        'd:\b\ret42-sub.c'
-            Lines:
+        Blocks:          
+          - FileName:        'c:\src\llvm-project\build\pdb_lines_2.c'
+            Lines:           
               - Offset:          0
                 LineStart:       1
                 IsStatement:     true
                 EndDelta:        0
-            Columns:
+              - Offset:          0
+                LineStart:       2
+                IsStatement:     true
+                EndDelta:        0
+            Columns:         
       - !FileChecksums
-        Checksums:
-          - FileName:        'd:\b\ret42-sub.c'
+        Checksums:       
+          - FileName:        'c:\src\llvm-project\build\pdb_lines_2.c'
             Kind:            MD5
-            Checksum:        EC2D89EFF5A1FEB6B74EE4D79074072F
+            Checksum:        DF91CB3A2B8D917486574BB50CAC4CC7
       - !StringTable
-        Strings:
-          - 'd:\b\ret42-sub.c'
+        Strings:         
+          - 'c:\src\llvm-project\build\pdb_lines_2.c'
       - !Symbols
-        Records:
+        Records:         
           - Kind:            S_BUILDINFO
-            BuildInfoSym:
+            BuildInfoSym:    
               BuildId:         4106
-    Relocations:
-      - VirtualAddress:  140
-        SymbolName:      foo
+    Relocations:     
+      - VirtualAddress:  164
+        SymbolName:      bar
         Type:            IMAGE_REL_AMD64_SECREL
-      - VirtualAddress:  144
-        SymbolName:      foo
+      - VirtualAddress:  168
+        SymbolName:      bar
         Type:            IMAGE_REL_AMD64_SECTION
-      - VirtualAddress:  196
-        SymbolName:      foo
+      - VirtualAddress:  220
+        SymbolName:      bar
         Type:            IMAGE_REL_AMD64_SECREL
-      - VirtualAddress:  200
-        SymbolName:      foo
+      - VirtualAddress:  224
+        SymbolName:      bar
         Type:            IMAGE_REL_AMD64_SECTION
   - Name:            '.debug$T'
     Characteristics: [ IMAGE_SCN_CNT_INITIALIZED_DATA, IMAGE_SCN_MEM_DISCARDABLE, IMAGE_SCN_MEM_READ ]
     Alignment:       1
-    Types:
+    Types:           
       - Kind:            LF_ARGLIST
-        ArgList:
+        ArgList:         
           ArgIndices:      [  ]
       - Kind:            LF_PROCEDURE
-        Procedure:
-          ReturnType:      116
+        Procedure:       
+          ReturnType:      3
           CallConv:        NearC
           Options:         [ None ]
           ParameterCount:  0
           ArgumentList:    4096
       - Kind:            LF_FUNC_ID
-        FuncId:
+        FuncId:          
           ParentScope:     0
           FunctionType:    4097
-          Name:            foo
+          Name:            bar
       - Kind:            LF_STRING_ID
-        StringId:
+        StringId:        
           Id:              0
-          String:          'D:\b'
+          String:          'C:\src\llvm-project\build'
       - Kind:            LF_STRING_ID
-        StringId:
+        StringId:        
           Id:              0
-          String:          'C:\vs14\VC\BIN\amd64\cl.exe'
+          String:          'C:\PROGRA~2\MICROS~1.0\VC\Bin\amd64\cl.exe'
       - Kind:            LF_STRING_ID
-        StringId:
+        StringId:        
           Id:              0
-          String:          '-Z7 -c -MT -IC:\vs14\VC\INCLUDE -IC:\vs14\VC\ATLMFC\INCLUDE -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.10150.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6\include\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\shared"'
+          String:          '-c -Z7 -MT -IC:\PROGRA~2\MICROS~1.0\VC\include -IC:\PROGRA~2\MICROS~1.0\VC\atlmfc\include -IC:\PROGRA~2\WI3CF2~1\10\include\10.0.14393.0\ucrt -IC:\PROGRA~2\WI3CF2~1\10\include\10.0.14393.0\shared -IC:\PROGRA~2\WI3CF2~1\10\include\10.0.14393.0\um'
       - Kind:            LF_SUBSTR_LIST
-        StringList:
+        StringList:      
           StringIndices:   [ 4101 ]
       - Kind:            LF_STRING_ID
-        StringId:
+        StringId:        
           Id:              4102
-          String:          ' -I"C:\Program Files (x86)\Windows Kits\8.1\include\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\winrt" -TC -X'
+          String:          ' -IC:\PROGRA~2\WI3CF2~1\10\include\10.0.14393.0\winrt -TC -X'
       - Kind:            LF_STRING_ID
-        StringId:
+        StringId:        
           Id:              0
-          String:          ret42-sub.c
+          String:          pdb_lines_2.c
       - Kind:            LF_STRING_ID
-        StringId:
+        StringId:        
           Id:              0
-          String:          'D:\b\vc140.pdb'
+          String:          'C:\src\llvm-project\build\vc140.pdb'
       - Kind:            LF_BUILDINFO
-        BuildInfo:
+        BuildInfo:       
           ArgIndices:      [ 4099, 4100, 4104, 4105, 4103 ]
   - Name:            '.text$mn'
     Characteristics: [ IMAGE_SCN_CNT_CODE, IMAGE_SCN_MEM_EXECUTE, IMAGE_SCN_MEM_READ ]
     Alignment:       16
-    SectionData:     B82A000000C3
-symbols:
-  - Name:            '@comp.id'
-    Value:           17062386
-    SectionNumber:   -1
-    SimpleType:      IMAGE_SYM_TYPE_NULL
-    ComplexType:     IMAGE_SYM_DTYPE_NULL
-    StorageClass:    IMAGE_SYM_CLASS_STATIC
-  - Name:            '@feat.00'
-    Value:           2147484048
-    SectionNumber:   -1
-    SimpleType:      IMAGE_SYM_TYPE_NULL
-    ComplexType:     IMAGE_SYM_DTYPE_NULL
-    StorageClass:    IMAGE_SYM_CLASS_STATIC
+    SectionData:     C3
+symbols:         
   - Name:            .drectve
     Value:           0
     SectionNumber:   1
     SimpleType:      IMAGE_SYM_TYPE_NULL
     ComplexType:     IMAGE_SYM_DTYPE_NULL
     StorageClass:    IMAGE_SYM_CLASS_STATIC
-    SectionDefinition:
+    SectionDefinition: 
       Length:          47
       NumberOfRelocations: 0
       NumberOfLinenumbers: 0
@@ -178,8 +170,8 @@ symbols:
     SimpleType:      IMAGE_SYM_TYPE_NULL
     ComplexType:     IMAGE_SYM_DTYPE_NULL
     StorageClass:    IMAGE_SYM_CLASS_STATIC
-    SectionDefinition:
-      Length:          304
+    SectionDefinition: 
+      Length:          360
       NumberOfRelocations: 4
       NumberOfLinenumbers: 0
       CheckSum:        0
@@ -190,8 +182,8 @@ symbols:
     SimpleType:      IMAGE_SYM_TYPE_NULL
     ComplexType:     IMAGE_SYM_DTYPE_NULL
     StorageClass:    IMAGE_SYM_CLASS_STATIC
-    SectionDefinition:
-      Length:          572
+    SectionDefinition: 
+      Length:          568
       NumberOfRelocations: 0
       NumberOfLinenumbers: 0
       CheckSum:        0
@@ -202,13 +194,13 @@ symbols:
     SimpleType:      IMAGE_SYM_TYPE_NULL
     ComplexType:     IMAGE_SYM_DTYPE_NULL
     StorageClass:    IMAGE_SYM_CLASS_STATIC
-    SectionDefinition:
-      Length:          6
+    SectionDefinition: 
+      Length:          1
       NumberOfRelocations: 0
       NumberOfLinenumbers: 0
-      CheckSum:        2139436471
+      CheckSum:        40735498
       Number:          0
-  - Name:            foo
+  - Name:            bar
     Value:           0
     SectionNumber:   4
     SimpleType:      IMAGE_SYM_TYPE_NULL

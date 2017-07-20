@@ -1,16 +1,13 @@
-# This test has an S_GPROC32_ID symbol with an invalid type index. Make sure we
-# keep the record, or we'll have unbalanced scopes, which is bad. This situation
-# can arise when we can't find the type server PDB.
+# This is an object compiled with /Zi (see the LF_TYPESERVER2 record) without an
+# adjacent type server PDB. Test that LLD fails gracefully on it.
+
+# FIXME: Ideally we'd do what MSVC does, which is to warn and drop all debug
+# info in the object with the missing PDB.
 
 # RUN: yaml2obj %s -o %t.obj
-# RUN: lld-link %t.obj -out:%t.exe -debug -pdb:%t.pdb -nodefaultlib -entry:main
-# RUN: llvm-pdbutil dump -symbols %t.pdb | FileCheck %s
+# RUN: not lld-link %t.obj -out:%t.exe -debug -pdb:%t.pdb -nodefaultlib -entry:main 2>&1 | FileCheck %s
 
-# CHECK: Mod 0000 | `{{.*}}pdb-invalid-func-type.yaml.tmp.obj`:
-# CHECK:      4 | S_GPROC32_ID [size = 44] `main`
-# CHECK:          parent = 0, end = 80, addr = 0001:0000, code size = 3
-# CHECK:     48 | S_FRAMEPROC [size = 32]
-# CHECK:     80 | S_END [size = 4]
+# CHECK: error: {{.*}} Type server PDB was not found
 
 --- !COFF
 header:
@@ -28,8 +25,7 @@ sections:
               CodeSize:        3
               DbgStart:        0
               DbgEnd:          2
-              # Corrupt function type!
-              FunctionType:    4101
+              FunctionType:    4199
               Flags:           [  ]
               DisplayName:     main
           - Kind:            S_FRAMEPROC
@@ -81,21 +77,11 @@ sections:
     Characteristics: [ IMAGE_SCN_CNT_INITIALIZED_DATA, IMAGE_SCN_MEM_DISCARDABLE, IMAGE_SCN_MEM_READ ]
     Alignment:       1
     Types:
-      - Kind:            LF_ARGLIST
-        ArgList:
-          ArgIndices:      [ 0 ]
-      - Kind:            LF_PROCEDURE
-        Procedure:
-          ReturnType:      116
-          CallConv:        NearC
-          Options:         [ None ]
-          ParameterCount:  0
-          ArgumentList:    4096
-      - Kind:            LF_FUNC_ID
-        FuncId:
-          ParentScope:     0
-          FunctionType:    4097
-          Name:            main
+      - Kind:            LF_TYPESERVER2
+        TypeServer2:
+          Guid:            ' ?  "?kB??RX?2??' # FIXME: yaml-ize this as hex.
+          Age:             18
+          Name:            'C:\src\llvm-project\build\definitely_not_found_for_sure.pdb'
   - Name:            '.text$mn'
     Characteristics: [ IMAGE_SCN_CNT_CODE, IMAGE_SCN_MEM_EXECUTE, IMAGE_SCN_MEM_READ ]
     Alignment:       16

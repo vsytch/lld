@@ -33,7 +33,7 @@ class Baserel;
 class Defined;
 class DefinedImportData;
 class DefinedRegular;
-class ObjectFile;
+class ObjFile;
 class OutputSection;
 class SymbolBody;
 
@@ -82,7 +82,7 @@ public:
   // An output section has pointers to chunks in the section, and each
   // chunk has a back pointer to an output section.
   void setOutputSection(OutputSection *O) { Out = O; }
-  OutputSection *getOutputSection() { return Out; }
+  OutputSection *getOutputSection() const { return Out; }
 
   // Windows-specific.
   // Collect all locations that contain absolute addresses for base relocations.
@@ -112,7 +112,7 @@ protected:
 };
 
 // A chunk corresponding a section of an input file.
-class SectionChunk : public Chunk {
+class SectionChunk final : public Chunk {
   // Identical COMDAT Folding feature accesses section internal data.
   friend class ICF;
 
@@ -122,9 +122,9 @@ public:
                               std::random_access_iterator_tag, SymbolBody *> {
     friend SectionChunk;
 
-    ObjectFile *File;
+    ObjFile *File;
 
-    symbol_iterator(ObjectFile *File, const coff_relocation *I)
+    symbol_iterator(ObjFile *File, const coff_relocation *I)
         : symbol_iterator::iterator_adaptor_base(I), File(File) {}
 
   public:
@@ -135,7 +135,7 @@ public:
     }
   };
 
-  SectionChunk(ObjectFile *File, const coff_section *Header);
+  SectionChunk(ObjFile *File, const coff_section *Header);
   static bool classof(const Chunk *C) { return C->kind() == SectionKind; }
   size_t getSize() const override { return Header->SizeOfRawData; }
   ArrayRef<uint8_t> getContents() const;
@@ -151,6 +151,8 @@ public:
                    uint64_t P) const;
   void applyRelARM(uint8_t *Off, uint16_t Type, OutputSection *OS, uint64_t S,
                    uint64_t P) const;
+  void applyRelARM64(uint8_t *Off, uint16_t Type, OutputSection *OS, uint64_t S,
+                     uint64_t P) const;
 
   // Called if the garbage collector decides to not include this chunk
   // in a final output. It's supposed to print out a log message to stdout.
@@ -186,6 +188,9 @@ public:
     return SectionName == ".debug" || SectionName.startswith(".debug$");
   }
 
+  // True if this is a DWARF debug info chunk.
+  bool isDWARF() const { return SectionName.startswith(".debug_"); }
+
   // Allow iteration over the bodies of this chunk's relocated symbols.
   llvm::iterator_range<symbol_iterator> symbols() const {
     return llvm::make_range(symbol_iterator(File, Relocs.begin()),
@@ -208,7 +213,7 @@ public:
   const coff_section *Header;
 
   // The file that this chunk was created from.
-  ObjectFile *File;
+  ObjFile *File;
 
 private:
   StringRef SectionName;
@@ -238,6 +243,7 @@ public:
   bool hasData() const override { return false; }
   uint32_t getPermissions() const override;
   StringRef getSectionName() const override { return ".bss"; }
+  void setAlign(uint32_t NewAlign);
 
 private:
   const COFFSymbolRef Sym;
@@ -262,6 +268,12 @@ static const uint8_t ImportThunkARM[] = {
     0x40, 0xf2, 0x00, 0x0c, // mov.w ip, #0
     0xc0, 0xf2, 0x00, 0x0c, // mov.t ip, #0
     0xdc, 0xf8, 0x00, 0xf0, // ldr.w pc, [ip]
+};
+
+static const uint8_t ImportThunkARM64[] = {
+    0x10, 0x00, 0x00, 0x90, // adrp x16, #0
+    0x10, 0x02, 0x40, 0xf9, // ldr  x16, [x16]
+    0x00, 0x02, 0x1f, 0xd6, // br   x16
 };
 
 // Windows-specific.
@@ -293,6 +305,16 @@ public:
   explicit ImportThunkChunkARM(Defined *S) : ImpSymbol(S) {}
   size_t getSize() const override { return sizeof(ImportThunkARM); }
   void getBaserels(std::vector<Baserel> *Res) override;
+  void writeTo(uint8_t *Buf) const override;
+
+private:
+  Defined *ImpSymbol;
+};
+
+class ImportThunkChunkARM64 : public Chunk {
+public:
+  explicit ImportThunkChunkARM64(Defined *S) : ImpSymbol(S) {}
+  size_t getSize() const override { return sizeof(ImportThunkARM64); }
   void writeTo(uint8_t *Buf) const override;
 
 private:
@@ -347,6 +369,9 @@ public:
   uint32_t RVA;
   uint8_t Type;
 };
+
+void applyMOV32T(uint8_t *Off, uint32_t V);
+void applyBranch24T(uint8_t *Off, int32_t V);
 
 } // namespace coff
 } // namespace lld

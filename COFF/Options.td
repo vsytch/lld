@@ -16,6 +16,7 @@ multiclass B<string name, string help> {
 }
 
 def align   : P<"align", "Section alignment">;
+def aligncomm : P<"aligncomm", "Set common symbol alignment">;
 def alternatename : P<"alternatename", "Define weak alias">;
 def base    : P<"base", "Base address of the program">;
 def defaultlib : P<"defaultlib", "Add the library to the list of input files">;
@@ -100,6 +101,8 @@ def help_q : Flag<["/?", "-?"], "">, Alias<help>;
 def nopdb : F<"nopdb">, HelpText<"Disable PDB generation for DWARF users">;
 def nosymtab : F<"nosymtab">;
 def msvclto : F<"msvclto">;
+def rsp_quoting : Joined<["--"], "rsp-quoting=">,
+  HelpText<"Quoting style for response files, 'windows' (default) or 'posix'">;
 
 // Flags for debugging
 def lldmap : F<"lldmap">;
